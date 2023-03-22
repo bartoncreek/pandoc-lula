@@ -1,2 +1,3 @@
 # pandoc-lula
-pandoc lua filter stuff
+
+A sandpit for pedagogical pandoc lua filter stuff. 
