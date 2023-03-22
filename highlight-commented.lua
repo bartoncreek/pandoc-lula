@@ -1,6 +1,24 @@
+--[[
+Add support for a custom inline syntax.
+
+This pandoc Lua filter allows to add a custom markup syntax
+extension. It is designed to be adjustable; it should not be
+necessary to modify the code below the separator line.
+
+The example here allows to add highlighted text by enclosing the
+text with `==` on each side. Pandoc supports this for HTML output
+out of the box. Other outputs will need additional filters.
+
+Copyright: © 2022 Albert Krewinkel
+License: MIT
+]]
+
+-- Code comments from GPT-4 or maybe others.
+
 -- This function processes an array of inline elements (text spans)
 -- and applies custom markup rules by searching for opening and closing patterns.
 function Inlines(inlines)
+    
     -- 'result' will store the final processed inline elements
     local result = pandoc.Inlines {}
 
@@ -12,38 +30,48 @@ function Inlines(inlines)
 
     -- Iterate over the input array of inline elements
     for i, inline in ipairs(inlines) do
+        
         -- Check if the current inline element is a text string
         if inline.tag == 'Str' then
+            
             -- If the markup variable is not initialized, search for the opening pattern in the text
             if not markup then
+                
                 -- Look for the opening pattern at the beginning of the inline text
                 local first = inline.text:match('^' .. opening .. '(.*)')
                 if first then
+                    
                     -- Store the current inline element as the start of the markup section
                     start = inline
 
                     -- Check if the closing pattern is already present in the current string
                     local selfclosing = first:match('(.*)' .. closing .. '$')
                     if selfclosing then
+                        
                         -- If it is, treat this as a self-closing markup and add the processed text
                         -- to the result
                         result:insert(markup_inlines { pandoc.Str(selfclosing) })
                     elseif nospace and first == '' and is_space(inlines[i + 1]) then
+                        
                         -- If the opening pattern is followed by a space, and the config disallows
                         -- spaces, add the original inline element to the result
                         result:insert(inline)
                     else
+                        
                         -- Otherwise, start collecting the text in the markup variable
                         markup = pandoc.Inlines { pandoc.Str(first) }
                     end
                 else
+                    
                     -- If no opening pattern is found, add the original inline element to the result
                     result:insert(inline)
                 end
             else
+                
                 -- If the markup variable is initialized, search for the closing pattern
                 local last = inline.text:match('(.*)' .. closing .. '$')
                 if last then
+                    
                     -- If the closing pattern is found, add the remaining text to the markup
                     markup:insert(pandoc.Str(last))
 
@@ -58,6 +86,7 @@ function Inlines(inlines)
                 end
             end
         else
+            
             -- If the inline element is not a text string, add it to either the markup or result,
             -- depending on the current state
             local acc = markup or result
